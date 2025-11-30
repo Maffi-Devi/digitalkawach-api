@@ -1,5 +1,5 @@
 flask==3.0.0
 flask-cors==4.0.0
-groq==0.4.2
+groq>=0.11.0
 requests==2.31.0
 gunicorn==21.2.0
