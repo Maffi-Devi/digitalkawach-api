@@ -14,7 +14,11 @@ def get_groq_client():
     if groq_client is None:
         api_key = os.environ.get('GROQ_API_KEY')
         if api_key:
-            groq_client = Groq(api_key=api_key)
+            try:
+                groq_client = Groq(api_key=api_key)
+            except Exception as e:
+                print(f"Failed to initialize Groq client: {e}")
+                return None
     return groq_client
 
 SCAM_KEYWORDS = [
@@ -271,7 +275,10 @@ def analyze_phone_basic(phone):
 
 @app.route('/')
 def home():
-    groq_status = "connected" if get_groq_client() else "not configured"
+    try:
+        groq_status = "connected" if get_groq_client() else "not configured"
+    except Exception:
+        groq_status = "error"
     return jsonify({
         "status": "running",
         "app": "DigitalKawach Backend API",
@@ -281,9 +288,16 @@ def home():
             "POST /classify-text - Analyze SMS text with AI",
             "POST /scan-url - Check URL safety with AI",
             "POST /check-phone - Verify phone number with AI",
-            "POST /check-call - Real-time call fraud detection"
+            "POST /check-call - Real-time call fraud detection",
+            "GET /ping - Keep-alive endpoint for Cloudflare"
         ]
     })
+
+
+@app.route('/ping')
+def ping():
+    """Keep-alive endpoint for Cloudflare Workers cron job"""
+    return "ok"
 
 
 @app.route('/classify-text', methods=['POST'])
